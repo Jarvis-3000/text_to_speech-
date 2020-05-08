@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text to Speech</title>
+
+    <style>
+        body {
+            /* background-color: chocolate; */
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: 0.2s;
+            transition: opacity 0.2s;
+        }
+        
+        .slider:hover {
+            opacity: 1;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 1px 5px rgb(71, 129, 53);
+            background: #4caf50;
+            cursor: pointer;
+        }
+        
+        div {
+            width: 400px;
+            height: auto;
+            padding: 20px;
+            position: absolute;
+            top: 50px;
+            left: calc(50% - 200px);
+            border: 1px solid black;
+            border-radius: 10px;
+            text-align: center;
+            background-color: dimgray;
+            margin: 20px;
+        }
+        
+        img {
+            height: 160px;
+            width: 160px;
+            border-radius: 10px;
+        }
+        
+        input {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        
+        #Text {
+            width: 90%;
+            padding: 10px 22px;
+            height: 30px;
+            border-radius: 5px;
+            border: none;
+            background-color: rgb(240, 233, 233);
+            outline: none;
+        }
+        
+        select {
+            width: 100%;
+            padding: 0px 20px;
+            height: 40px;
+            border-radius: 5px;
+            border: none;
+            background-color: rgb(240, 233, 233);
+            outline: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0px 20px;
+            height: 40px;
+            border-radius: 5px;
+            border: none;
+            background-color: rgb(240, 233, 233);
+            outline: none;
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <img id="img" src="https://tse4.mm.bing.net/th?id=OIP.hw12ORBZUPn8UZMgyGdgDQHaHa&pid=Api&P=0&w=300&h=300" />
+        <h2>Type-&-Speak</h2>
+        <input id="Text" type=" text " placeholder="Enter any text... " />
+        <br /> speed
+        <input type="range" min="1 " max="100 " value="50 " class="slider" id="myRange1" /><br /> Pitch
+        <input type="range" min="1 " max="100 " value="50 " class="slider" id="myRange2" />
+        <br />
+        <select id="voice"> </select>
+        <br />
+        <button id="btn">click</button>
+    </div>
+
+    <script>
+        //init speechSynth api
+        const synth = window.speechSynthesis;
+
+        const Text = document.querySelector("#Text");
+        var voiceSelect = document.querySelector("#voice");
+        const speed = document.querySelector("#myRange1");
+        const pitch = document.querySelector("#myRange2");
+        const btn = document.querySelector("#btn");
+        //init voice array
+        var voices = [];
+
+        function getVoices() {
+            voices = synth.getVoices();
+            //console.log(voices);
+            //adding voices languages in option
+            voices.forEach((voice) => {
+                const option = document.createElement("option");
+                option.textContent = voice.name + "(" + voice.lang + ")";
+
+                option.setAttribute("data-lang", voice.lang);
+                option.setAttribute("data-name", voice.name);
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        getVoices();
+
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = getVoices;
+        }
+
+        function speak() {
+            //check if speakin
+            if (synth.speaking) {
+                console.error("Already speaking.. ");
+                return;
+            }
+            if (Text.value !== " ") {
+                //Get speak text
+
+                const speakText = new SpeechSynthesisUtterance(Text.value);
+
+                speakText.onend = (e) => {
+                    console.log("Done speaking... ");
+                };
+
+                speakText.onerror = (e) => {
+                    console.error("Something went wrong.. ");
+                };
+
+                //selected voice
+
+                const selectedVoice = voiceSelect.selectedOptions[0].getAttribute("data-name");
+
+                //loop through voices
+
+                voices.forEach((voice) => {
+                    if (voice.name === selectedVoice) {
+                        speakText.voice = voice;
+                    }
+                });
+
+                //set pitch and rate
+                speakText.rate = (speed.value) / 40;
+                speakText.pitch = pitch.value;
+
+                synth.speak(speakText);
+            }
+        };
+
+        btn.addEventListener("click", () => {
+            speak();
+            Text.blur();
+        });
+    </script>
+</body>
+
+</html>
